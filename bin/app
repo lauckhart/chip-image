@@ -1,37 +1,20 @@
 #!/bin/bash
 
 # @license
-# Copyright 2022-2026 Matter.js Authors
+# Copyright 2024-2026 Greg Lauckhart
 # SPDX-License-Identifier: Apache-2.0
 
-if [ -z "$1" ]; then
-    APP="all-clusters"
-else
-    APP="$1"
-    shift
-fi
+source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
-case "$APP" in
-    icd)
-        APP=lit-icd-app
-        ;;
-
-    network-manager)
-        APP=matter-network-manager-app
-        ;;
-
-    *)
-        APP="chip-$APP-app"
-        ;;
-esac
+APP="${1:-all-clusters}"
+shift 2>/dev/null
 
 docker run \
     -it \
     --rm \
     --workdir / \
     --security-opt apparmor:unconfined \
-    -v matter.js-mdns:/run/dbus \
-    --platform linux/amd64 \
-    --entrypoint "/bin/$APP" \
-    ghcr.io/matter-js/chip \
+    -v chip-mdns:/run/dbus \
+    --platform "$CHIP_PLATFORM" \
+    "ghcr.io/lauckhart/chip-${APP}" \
     "$@"

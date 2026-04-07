@@ -1,15 +1,12 @@
 #!/bin/bash
 
 # @license
-# Copyright 2022-2026 Matter.js Authors
+# Copyright 2024-2026 Greg Lauckhart
 # SPDX-License-Identifier: Apache-2.0
 
 # Run a shell in a new ephemeral container (if no args) or in a running container (1 arg)
 
 source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
-
-THISDIR=$(dirname -- "${BASH_SOURCE[0]}")
-GIT_ROOT=$(realpath "${THISDIR}/../../..")
 
 CONTAINER="$1"
 
@@ -19,13 +16,13 @@ if [ -z "$CONTAINER" ]; then
         --rm \
         --workdir / \
         --security-opt apparmor:unconfined \
-        -v matter.js-mdns:/run/dbus \
+        -v chip-mdns:/run/dbus \
         --platform "$CHIP_PLATFORM" \
-        ghcr.io/matter-js/chip-apps \
+        $CHIP_IMAGE \
         "$@"
 else
     docker exec \
         -it \
-        "matter.js-$CONTAINER" \
+        "chip-$CONTAINER" \
         bash
 fi

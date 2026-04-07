@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # @license
-# Copyright 2022-2026 Matter.js Authors
+# Copyright 2024-2026 Greg Lauckhart
 # SPDX-License-Identifier: Apache-2.0
 
-# To push you must have write access to https://github.com/matter-js/matter.js-chip.
+# To push you must have write access to https://github.com/lauckhart/chip-image.
 #
 # Use "docker login" command with a "personal access token (classic)" with package:write scope.
 #
@@ -14,4 +14,4 @@
 
 source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
-docker push ghcr.io/matter-js/chip:latest
+docker push $CHIP_IMAGE:latest

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # @license
-# Copyright 2022-2026 Matter.js Authors
+# Copyright 2024-2026 Greg Lauckhart
 # SPDX-License-Identifier: Apache-2.0
 
 # Build the CHIP container
@@ -20,8 +20,8 @@ set -e
 
 source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
-if ! docker buildx inspect matter.js-chip > /dev/null 2>&1; then
-    docker buildx create --name matter.js-chip
+if ! docker buildx inspect chip-image > /dev/null 2>&1; then
+    docker buildx create --name chip-image
 fi
 
 if [ -z "$CHIP_COMMIT" ]; then
@@ -42,6 +42,6 @@ cd "$CHIP_DIR"
 # We only write to /tmp/chip.tar but the entitlement path to that specific file no longer works
 docker buildx bake \
     --file docker-bake.hcl \
-    --builder matter.js-chip \
+    --builder chip-image \
     --allow=fs.write=/tmp \
     $*

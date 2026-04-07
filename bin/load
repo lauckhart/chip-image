@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # @license
-# Copyright 2022-2026 Matter.js Authors
+# Copyright 2024-2026 Greg Lauckhart
 # SPDX-License-Identifier: Apache-2.0
 
 # Loads build targets into a local image tagged "chip/<target>" and runs bash
 
 source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
-if ! docker buildx inspect matter.js-chip > /dev/null 2>&1; then
-    docker buildx create --name matter.js-chip
+if ! docker buildx inspect chip-image > /dev/null 2>&1; then
+    docker buildx create --name chip-image
 fi
 
 TARGET=$1
@@ -20,7 +20,7 @@ fi
 shift
 
 docker buildx build . \
-    --builder matter.js-chip \
+    --builder chip-image \
     --load \
     -t "chip/${TARGET}" \
     --target "${TARGET}" \

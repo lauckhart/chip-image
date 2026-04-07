@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # @license
-# Copyright 2022-2026 Matter.js Authors
+# Copyright 2024-2026 Greg Lauckhart
 # SPDX-License-Identifier: Apache-2.0
 
 # Browse MDNS records in the test MDNS instance using Avahi
@@ -20,5 +20,5 @@ docker run \
     -it \
     --rm \
     --security-opt apparmor:unconfined \
-    -v matter.js-mdns:/run/dbus ghcr.io/matter-js/chip avahi-browse \
+    -v chip-mdns:/run/dbus $CHIP_IMAGE avahi-browse \
     "${ARGS[@]}"

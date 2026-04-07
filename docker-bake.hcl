@@ -20,8 +20,8 @@ target "chip" {
     }
 
     tags = [
-        "ghcr.io/matter-js/chip:latest",
-        "ghcr.io/matter.js-chip:${CHIP_COMMIT}",
+        "ghcr.io/lauckhart/chip-image:latest",
+        "ghcr.io/lauckhart/chip-image:${CHIP_COMMIT}",
         "chip:latest",
     ]
 
@@ -34,7 +34,7 @@ target "chip" {
     #cache-from = [
     #    {
     #        type = "registry"
-    #        ref = "ghcr.io/matter-js/chip-cache:cache"
+    #        ref = "ghcr.io/lauckhart/chip-cache:cache"
     #        mode = "max"
     #    }
     #]
@@ -42,7 +42,7 @@ target "chip" {
     #cache-to = [
     #    {
     #        type = "registry"
-    #        ref = "ghcr.io/matter-js/chip-cache:cache"
+    #        ref = "ghcr.io/lauckhart/chip-cache:cache"
     #        mode = "max"
     #        ignore-error = true
     #    }
@@ -141,8 +141,8 @@ target "app" {
     }
 
     tags = [
-        "ghcr.io/matter-js/chip-${app.name}:latest",
-        "ghcr.io/matter-js/chip-${app.name}:${CHIP_COMMIT}",
+        "ghcr.io/lauckhart/chip-${app.name}:latest",
+        "ghcr.io/lauckhart/chip-${app.name}:${CHIP_COMMIT}",
         "chip-${app.name}:latest",
     ]
 }

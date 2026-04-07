@@ -1,5 +1,5 @@
 # @license
-# Copyright 2022-2026 Matter.js Authors
+# Copyright 2024-2026 Greg Lauckhart
 # SPDX-License-Identifier: Apache-2.0
 
 # Builds an image capable of running chip-tool and CHIP tests.
@@ -18,7 +18,7 @@ FROM ubuntu:24.04 AS base
 SHELL [ "/bin/bash", "-c" ]
 
 # Quality of life
-RUN echo 'PS1="\[\033[01;32m\]matter.js-chip\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m# "' >> /root/.bashrc
+RUN echo 'PS1="\[\033[01;32m\]chip-image\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m# "' >> /root/.bashrc
 
 # Set timezone to UTC
 ENV TZ=Etc/UTC
@@ -140,9 +140,9 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
     apt-get -qq -y install avahi-daemon avahi-utils iproute2 less vim-tiny wget
 EOF
 
-LABEL org.opencontainers.image.title="matter.js CHIP tooling build"
-LABEL org.opencontainers.image.url=https://github.com/matter-js/matter.js-chip
-LABEL org.opencontainers.image.source=https://github.com/project-chip/matter.js/tree/main/packages/testing/chip
+LABEL org.opencontainers.image.title="CHIP tooling for connectedhomeip testing"
+LABEL org.opencontainers.image.url=https://github.com/lauckhart/chip-image
+LABEL org.opencontainers.image.source=https://github.com/lauckhart/chip-image
 
 RUN rm -rf bin.usr-is-merged boot home media mnt opt sbin.usr-is-merged srv
 
@@ -207,7 +207,7 @@ RUN echo allow-interfaces
 # STAGE 6 - build example app
 #
 
-FROM install AS app-bins
+FROM source AS app-bins
 
 ARG APP_TARGET
 

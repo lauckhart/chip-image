@@ -1,10 +1,18 @@
-# matter.js CHIP container
+# chip-image
 
-This is the source for **ghcr.io/matter-js/chip** published here: https://github.com/matter-js/matter.js-chip
+Docker images for [connectedhomeip](https://github.com/project-chip/connectedhomeip) certification testing.
+
+This is the source for **ghcr.io/lauckhart/chip-image** published here: https://github.com/lauckhart/chip-image
+
+These images have a custom build pipeline optimized for quick build and minimal image size.  The core chip-image
+container provides everything needed to run tests.  The image is self-describing with a metadata bundle in
+`/lib/test-descriptor.json` that documents the tests available in machine readable format.
+
+Note that this repo isn't affiliated with the Connectivity Standards Alliance.  The images and tooling are useful during
+development of Matter devices but don't involve actual certification.  Matter is a trademark of the Connectivity
+Standards Alliance.
 
 ## Usage
-
-The matter.js test harness pulls this image automatically when running CHIP tests.
 
 The [bin](./bin) directory contains additional helper scripts you can use on the host:
 
@@ -15,8 +23,9 @@ The [bin](./bin) directory contains additional helper scripts you can use on the
 * [publish](./bin/publish) pushes the image to GHCR with "latest" tag
 * [pull](./bin/pull) pulls the image from GHCR
 
-The container currently requires host networking and access to a local Avahi for MDNS.  In the future we will run Avahi
-in a utility container and convert to a bridge network.
+Due to Docker limitations, the container currently requires host networking for reliable MDNS communication if your
+device or controller runs outside of Docker.  We provide dbus/avahi in chip-image so it's easy to start a dedicated
+instance.
 
 ## Building
 

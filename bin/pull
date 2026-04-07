@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # @license
-# Copyright 2022-2026 Matter.js Authors
+# Copyright 2024-2026 Greg Lauckhart
 # SPDX-License-Identifier: Apache-2.0
 
 source "$(dirname "${BASH_SOURCE[0]}")/config.sh"
 
-docker pull ghcr.io/matter-js/chip:latest
+docker pull $CHIP_IMAGE:latest
