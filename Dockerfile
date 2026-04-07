@@ -210,9 +210,10 @@ RUN echo allow-interfaces
 FROM source AS app-bins
 
 ARG APP_TARGET
+ARG APP_BIN
 
 # Build binaries
-RUN build-one "$APP_TARGET"
+RUN build-one "$APP_TARGET" "$APP_BIN"
 
 
 ################################################################################

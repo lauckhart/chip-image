@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Copyright 2024-2026 Greg Lauckhart
+#
+# SPDX-License-Identifier: Apache-2.0
+
+# Smoke test for chip-image.  Bind-mounted into the harness container by
+# docker-compose.yml.  Exercises commissioning, YAML tests, and Python tests.
+
+set -e
+
+echo "=== Commission via chip-tool ==="
+chip-tool pairing onnetwork-long 0x12344321 20202021 3840
+
+echo "=== Run YAML test (Test_TC_BOOL_2_1) ==="
+python3 /scripts/tests/chipyaml/chiptool.py tests Test_TC_BOOL_2_1 \
+    --server_path /bin/chip-tool \
+    --PIXIT.CADMIN.CwDuration 3 \
+    --waitAfterCommissioning 500
+
+echo "=== Open commissioning window for second fabric ==="
+chip-tool administratorcommissioning open-basic-commissioning-window 180 0x12344321 0 --timedInteractionTimeoutMs 5000
+
+echo "=== Commission via hello_test.py ==="
+cd /tmp
+python3 /src/python_testing/hello_test.py \
+    --commission-only \
+    --passcode 20202021 \
+    --discriminator 3840 \
+    --commissioning-method on-network
+
+echo "=== Smoke test passed ==="

@@ -1,0 +1,43 @@
+volumes:
+  chip-mdns:
+
+services:
+  dbus:
+    image: ghcr.io/lauckhart/chip-image
+    network_mode: host
+    security_opt: [apparmor:unconfined]
+    volumes: [chip-mdns:/run/dbus]
+    command: [/usr/bin/dbus-daemon, --nopidfile, --system, --nofork]
+
+  mdns:
+    image: ghcr.io/lauckhart/chip-image
+    network_mode: host
+    security_opt: [apparmor:unconfined]
+    volumes: [chip-mdns:/run/dbus]
+    command: [/bin/mdns-run]
+    depends_on: [dbus]
+    healthcheck:
+      test: ["CMD", "dbus-send", "--system", "--print-reply", "--dest=org.freedesktop.Avahi", "/", "org.freedesktop.Avahi.Server.GetVersionString"]
+      interval: 1s
+      timeout: 2s
+      retries: 10
+
+  dut:
+    image: ghcr.io/lauckhart/chip-all-clusters
+    network_mode: host
+    security_opt: [apparmor:unconfined]
+    volumes: [chip-mdns:/run/dbus]
+    command: [--discriminator, "3840", --passcode, "20202021", --KVS, /tmp/kvs]
+    depends_on:
+      mdns:
+        condition: service_healthy
+
+  harness:
+    image: ghcr.io/lauckhart/chip-image
+    network_mode: host
+    security_opt: [apparmor:unconfined]
+    volumes:
+      - chip-mdns:/run/dbus
+      - ./run-smoke-test:/bin/run-smoke-test:ro
+    command: [/bin/run-smoke-test]
+    depends_on: [dut]

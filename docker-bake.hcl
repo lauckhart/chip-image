@@ -66,67 +66,67 @@ target "app" {
         app = [
             {
                 name: "all-clusters",
-                target: "all-clusters",
+                target: "all-clusters-app/linux",
                 bin: "chip-all-clusters-app",
             },
 
             {
                 name: "all-devices",
-                target: "all-devices",
+                target: "all-devices-app/posix",
                 bin: "all-devices-app",
             },
 
             {
                 name: "lock",
-                target: "lock",
+                target: "lock-app/linux",
                 bin: "chip-lock-app",
             },
 
             {
                 name: "tv",
-                target: "tv-app",
+                target: "tv-app/linux",
                 bin: "chip-tv-app",
             },
 
             {
                 name: "bridge",
-                target: "bridge",
+                target: "bridge-app/linux",
                 bin: "chip-bridge-app",
             },
 
             {
                 name: "lit-icd",
-                target: "lit-icd",
+                target: "lit-icd-app/linux",
                 bin: "lit-icd-app",
             },
 
             {
                 name: "microwave",
-                target: "microwave-oven",
+                target: "microwave-oven-app/linux",
                 bin: "chip-microwave-oven-app",
             },
 
             {
                 name: "rvc",
-                target: "rvc",
+                target: "rvc-app/linux",
                 bin: "chip-rvc-app",
             },
 
             {
                 name: "network-manager",
-                target: "network-manager",
+                target: "network-manager-app/linux",
                 bin: "matter-network-manager-app",
             },
 
             {
                 name: "energy-gateway",
-                target: "energy-gateway",
+                target: "energy-gateway-app/linux",
                 bin: "chip-energy-gateway-app",
             },
 
             {
                 name: "evse",
-                target: "evse",
+                target: "evse-app/linux",
                 bin: "chip-evse-app",
             },
         ]
