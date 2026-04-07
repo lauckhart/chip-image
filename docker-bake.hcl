@@ -147,6 +147,16 @@ target "app" {
     ]
 }
 
+target "source-artifact" {
+    inherits = [ "source" ]
+    output = [
+        {
+            type = "docker"
+            dest = "${TMPDIR}/chip-source.tar"
+        }
+    ]
+}
+
 target "base" {
     inherits = [ "chip" ]
     target = "base"

@@ -1,0 +1,262 @@
+name: Build & Test
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      updateChipSha:
+        description: Update to latest CHIP SDK before building
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.ref }}-build-test
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update CHIP SHA
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.updateChipSha)
+        run: bin/update-version
+
+      - name: Build chip image and source
+        run: bin/build chip-artifact source-artifact
+
+      - name: Upload chip image
+        uses: actions/upload-artifact@v4
+        with:
+          name: chip-image
+          path: /tmp/chip.tar
+          retention-days: 1
+
+      - name: Upload source image
+        uses: actions/upload-artifact@v4
+        with:
+          name: chip-source
+          path: /tmp/chip-source.tar
+          retention-days: 1
+
+      - name: Upload updated SHA
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.updateChipSha)
+        uses: actions/upload-artifact@v4
+        with:
+          name: chip-sha
+          path: sha.txt
+          retention-days: 1
+
+  build-apps:
+    needs: build
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - all-clusters
+          - all-devices
+          - lock
+          - tv
+          - bridge
+          - lit-icd
+          - microwave
+          - rvc
+          - network-manager
+          - energy-gateway
+          - evse
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download chip image
+        uses: actions/download-artifact@v4
+        with:
+          name: chip-image
+          path: /tmp
+
+      - name: Download source image
+        uses: actions/download-artifact@v4
+        with:
+          name: chip-source
+          path: /tmp
+
+      - name: Load base images
+        run: |
+          docker load < /tmp/chip.tar
+          docker load < /tmp/chip-source.tar
+
+      - name: Build ${{ matrix.app }}
+        run: bin/build ${{ matrix.app }}
+
+      - name: Save all-clusters image
+        if: matrix.app == 'all-clusters'
+        run: docker save ghcr.io/lauckhart/chip-all-clusters -o /tmp/chip-all-clusters.tar
+
+      - name: Upload all-clusters image
+        if: matrix.app == 'all-clusters'
+        uses: actions/upload-artifact@v4
+        with:
+          name: chip-all-clusters
+          path: /tmp/chip-all-clusters.tar
+          retention-days: 1
+
+  smoke-test:
+    needs: [build, build-apps]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download chip image
+        uses: actions/download-artifact@v4
+        with:
+          name: chip-image
+          path: /tmp
+
+      - name: Download all-clusters image
+        uses: actions/download-artifact@v4
+        with:
+          name: chip-all-clusters
+          path: /tmp
+
+      - name: Load images
+        run: |
+          docker load < /tmp/chip.tar
+          docker load < /tmp/chip-all-clusters.tar
+
+  publish-chip:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download chip image
+        uses: actions/download-artifact@v4
+        with:
+          name: chip-image
+          path: /tmp
+
+      - name: Load chip image
+        run: docker load < /tmp/chip.tar
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read CHIP commit
+        id: sha
+        run: echo "commit=$(cat sha.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Push chip-image
+        run: |
+          docker push ghcr.io/lauckhart/chip-image:latest
+          docker tag ghcr.io/lauckhart/chip-image:latest ghcr.io/lauckhart/chip-image:${{ steps.sha.outputs.commit }}
+          docker push ghcr.io/lauckhart/chip-image:${{ steps.sha.outputs.commit }}
+
+  publish-apps:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - all-clusters
+          - all-devices
+          - lock
+          - tv
+          - bridge
+          - lit-icd
+          - microwave
+          - rvc
+          - network-manager
+          - energy-gateway
+          - evse
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download chip image
+        uses: actions/download-artifact@v4
+        with:
+          name: chip-image
+          path: /tmp
+
+      - name: Download source image
+        uses: actions/download-artifact@v4
+        with:
+          name: chip-source
+          path: /tmp
+
+      - name: Load base images
+        run: |
+          docker load < /tmp/chip.tar
+          docker load < /tmp/chip-source.tar
+
+      - name: Build ${{ matrix.app }}
+        run: bin/build ${{ matrix.app }}
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read CHIP commit
+        id: sha
+        run: echo "commit=$(cat sha.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Push ${{ matrix.app }}
+        run: |
+          docker push ghcr.io/lauckhart/chip-${{ matrix.app }}:latest
+          docker tag ghcr.io/lauckhart/chip-${{ matrix.app }}:latest ghcr.io/lauckhart/chip-${{ matrix.app }}:${{ steps.sha.outputs.commit }}
+          docker push ghcr.io/lauckhart/chip-${{ matrix.app }}:${{ steps.sha.outputs.commit }}
+
+      - name: Run smoke test
+        run: docker compose -f example/docker-compose.yml up --exit-code-from harness --abort-on-container-exit
+
+  update-sha:
+    needs: [publish-chip, publish-apps]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download updated SHA
+        uses: actions/download-artifact@v4
+        with:
+          name: chip-sha
+        continue-on-error: true
+
+      - name: Commit and push
+        run: |
+          if git diff --quiet sha.txt; then
+            echo "No SHA change"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sha.txt
+          git commit -m "Update CHIP SDK to $(cat sha.txt | cut -c 1-12)"
+          git push
