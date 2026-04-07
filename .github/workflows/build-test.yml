@@ -142,6 +142,9 @@ jobs:
           docker load < /tmp/chip.tar
           docker load < /tmp/chip-all-clusters.tar
 
+      - name: Run smoke test
+        run: docker compose -f example/docker-compose.yml up --exit-code-from harness --abort-on-container-exit
+
   publish-chip:
     needs: smoke-test
     runs-on: ubuntu-latest
@@ -236,9 +239,6 @@ jobs:
           docker push ghcr.io/lauckhart/chip-${{ matrix.app }}:latest
           docker tag ghcr.io/lauckhart/chip-${{ matrix.app }}:latest ghcr.io/lauckhart/chip-${{ matrix.app }}:${{ steps.sha.outputs.commit }}
           docker push ghcr.io/lauckhart/chip-${{ matrix.app }}:${{ steps.sha.outputs.commit }}
-
-      - name: Run smoke test
-        run: docker compose -f example/docker-compose.yml up --exit-code-from harness --abort-on-container-exit
 
   update-sha:
     needs: [publish-chip, publish-apps]
