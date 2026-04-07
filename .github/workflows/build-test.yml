@@ -36,6 +36,9 @@ jobs:
       - name: Build chip image and source
         run: bin/build chip-artifact source-artifact
 
+      - name: Validate test descriptor
+        run: docker run --rm ghcr.io/lauckhart/chip-image validate-test-descriptor
+
       - name: Upload chip image
         uses: actions/upload-artifact@v4
         with:

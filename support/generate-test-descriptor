@@ -411,16 +411,5 @@ for test in tests:
     else:
         members.append(test)
 
-# Validate counts -- thresholds are 90% of known counts as of 2026-04-06 (299 yaml, 611 py)
-yaml_count = sum(1 for t in tests if t["kind"] == "yaml")
-py_count = sum(1 for t in tests if t["kind"] == "py")
-total = yaml_count + py_count
-
-assert yaml_count > 269, f"Too few YAML tests: {yaml_count}"
-assert py_count > 549, f"Too few Python tests: {py_count}"
-assert total > 819, f"Too few total tests: {total}"
-
-sys.stderr.write(f"{total} tests ({yaml_count} yaml, {py_count} python)\n")
-
 # Write the result
 print(json.dumps({ "name": "chip", "format": 2, "kind": "suite", "members": members }))

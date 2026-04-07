@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+# @license
+# Copyright 2024-2026 Greg Lauckhart
+# SPDX-License-Identifier: Apache-2.0
+
+"""Validate test-descriptor.json counts.
+
+Runs inside the chip container against /lib/test-descriptor.json.
+"""
+
+import json, sys
+
+with open("/lib/test-descriptor.json") as f:
+    d = json.load(f)
+
+def count_by_kind(node):
+    counts = {}
+    kind = node.get("kind", "")
+    if kind and kind != "suite" and kind != "step":
+        counts[kind] = 1
+    for m in node.get("members", []):
+        for k, v in count_by_kind(m).items():
+            counts[k] = counts.get(k, 0) + v
+    return counts
+
+counts = count_by_kind(d)
+yaml_count = counts.get("yaml", 0)
+py_count = counts.get("py", 0)
+manual_count = counts.get("manual", 0)
+total = yaml_count + py_count
+
+print(f"{total} tests ({yaml_count} yaml, {py_count} python, {manual_count} manual)")
+
+# Thresholds are 90% of known counts as of 2026-04-07 (292 yaml, 622 py)
+assert yaml_count > 262, f"Too few YAML tests: {yaml_count} (expected >262)"
+assert py_count > 559, f"Too few Python tests: {py_count} (expected >559)"
+assert total > 822, f"Too few total tests: {total} (expected >822)"
+
+print("OK")

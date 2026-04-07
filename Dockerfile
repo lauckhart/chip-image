@@ -184,6 +184,7 @@ RUN mkdir /run/dbus
 
 # Summarize tests for efficient metadata load at runtime
 COPY support/generate-test-descriptor /bin/generate-test-descriptor
+COPY support/validate-test-descriptor /bin/validate-test-descriptor
 RUN generate-test-descriptor > /lib/test-descriptor.json
 
 # Install extra PICS files
